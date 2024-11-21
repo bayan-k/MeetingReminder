@@ -1,7 +1,6 @@
 import 'package:get/get.dart';
 import 'package:meetingreminder/app/modules/homepage/controllers/bottom_nav_controller.dart';
 import 'package:meetingreminder/app/modules/homepage/controllers/homepage_controller.dart';
-import 'package:meetingreminder/app/modules/homepage/views/homepage_view.dart';
 import 'package:meetingreminder/app/services/notification_services.dart';
 
 

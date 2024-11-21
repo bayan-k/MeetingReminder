@@ -15,7 +15,7 @@ class HomePageView extends StatefulWidget {
 }
 
 class _HomePageViewState extends State<HomePageView> {
-  Rx<DateTime> _focusedDay = Rx<DateTime>(
+  final Rx<DateTime> _focusedDay = Rx<DateTime>(
       DateTime.now()); // Declare _focusedDay as a reactive variable
   DateTime? _selectedDay;
   final BottomNavController controller = Get.put(BottomNavController());

@@ -13,30 +13,13 @@ class TimeLineView extends StatefulWidget {
 
 class _TimeLineViewState extends State<TimeLineView> {
   final BottomNavController controller = Get.put(BottomNavController());
-
   final TimePickerController timePickerController =
       Get.put(TimePickerController());
-  NotificationService _notificationService = NotificationService();
- 
-  
+  final NotificationService _notificationService = NotificationService();
+
   List<String> imageItems = [
     'assets/images/icons/home-page.png',
     'assets/images/icons/clock(1).png',
-  ];
-
-  final List<String> _months = [
-    'January',
-    'February',
-    'March',
-    'April',
-    'May',
-    'June',
-    'July',
-    'August',
-    'September',
-    'October',
-    'November',
-    'December'
   ];
 
   Widget buildReminderBox() {
@@ -99,7 +82,9 @@ class _TimeLineViewState extends State<TimeLineView> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               GestureDetector(
-                onTap: () {},
+                onTap: () {
+                  timePickerController.meetingSetter(context, true);
+                },
                 child: Container(
                     height: 20,
                     decoration: const BoxDecoration(
@@ -112,14 +97,10 @@ class _TimeLineViewState extends State<TimeLineView> {
               SizedBox(
                 width: 100,
                 child: Obx(() {
-                  return GestureDetector(
-                      onTap: () =>
-                          timePickerController.meetingSetter(context, true),
-                      child: Container(
-                          child: Text(
-                              timePickerController.startTime.value.isEmpty
-                                  ? 'select time'
-                                  : timePickerController.startTime.value)));
+                  return Container(
+                      child: Text(timePickerController.startTime.value.isEmpty
+                          ? 'select time'
+                          : timePickerController.startTime.value));
                 }),
               ),
             ],
@@ -131,7 +112,7 @@ class _TimeLineViewState extends State<TimeLineView> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               GestureDetector(
-                onTap: () {},
+                onTap: () => timePickerController.meetingSetter(context, false),
                 child: Container(
                     height: 20,
                     decoration: const BoxDecoration(
@@ -144,13 +125,9 @@ class _TimeLineViewState extends State<TimeLineView> {
               SizedBox(
                 width: 100,
                 child: Obx(() {
-                  return GestureDetector(
-                      onTap: () =>
-                          timePickerController.meetingSetter(context, false),
-                      child: Container(
-                          child: Text(timePickerController.endTime.value.isEmpty
-                              ? 'select time'
-                              : timePickerController.endTime.value)));
+                  return Text(timePickerController.endTime.value.isEmpty
+                      ? 'select time'
+                      : timePickerController.endTime.value);
                 }),
               ),
             ],
@@ -190,202 +167,158 @@ class _TimeLineViewState extends State<TimeLineView> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Stack(children: [
-        const Positioned(
-          top: 50,
-          left: 50,
-          child: Text(
-            'Scheduled  Meetings',
-            style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
-          ),
-        ),
-        //  Positioned(child: child),
-        Positioned(
-          top: 100,
-          left: 20,
-          child: SizedBox(
-              height: MediaQuery.of(context).size.height - 150,
-              width: MediaQuery.of(context).size.width - 40,
-              child: Obx(() {
-                return Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: ListView.builder(
-                    shrinkWrap: true,
-                    itemCount: timePickerController.meeting.length,
-                    scrollDirection: Axis.vertical,
-                    itemBuilder: (context, index) {
-                      final meeting = timePickerController.meeting[index];
-                      return Column(children: [
-                        Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+        buildMeetingText(),
+        buildMeetingBox(context),
+        buildBottomBar(),
+        buildFab(),
+      ]),
+    );
+  }
+
+  Widget buildMeetingText() {
+    return Positioned(
+      top: 50,
+      left: 50,
+      child: Text(
+        'Scheduled  Meetings',
+        style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
+      ),
+    );
+  }
+
+  Widget buildMeetingBox(BuildContext context) {
+    return Positioned(
+      top: 100,
+      left: 20,
+      child: SizedBox(
+          height: MediaQuery.of(context).size.height - 150,
+          width: MediaQuery.of(context).size.width - 40,
+          child: Obx(() {
+            return Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: ListView.builder(
+                shrinkWrap: true,
+                itemCount: timePickerController.meeting.length,
+                scrollDirection: Axis.vertical,
+                itemBuilder: (context, index) {
+                  final meeting = timePickerController.meeting[index];
+                  return Column(children: [
+                    Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Column(
                             children: [
-                              Column(
-                                children: [
-                                  const Icon(Icons.circle,
-                                      size: 12, color: Colors.blue),
-                                  if (index !=
-                                      timePickerController.meeting.length -
-                                          1) // Show the line except for the last item
-                                    Container(
-                                      width: 2,
-                                      height: 250,
-                                      color: Colors.blue,
-                                    ),
+                              const Icon(Icons.circle,
+                                  size: 12, color: Colors.blue),
+                              if (index !=
+                                  timePickerController.meeting.length -
+                                      1) // Show the line except for the last item
+                                Container(
+                                  width: 2,
+                                  height: 250,
+                                  color: Colors.blue,
+                                ),
+                            ],
+                          ),
+                          const SizedBox(
+                            width: 10,
+                          ),
+                          Container(
+                              height: 240,
+                              width: 200,
+                              margin: const EdgeInsets.symmetric(
+                                  vertical: 8, horizontal: 16),
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(12),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.grey.withOpacity(0.2),
+                                    blurRadius: 6,
+                                    offset: const Offset(0, 3),
+                                  ),
                                 ],
                               ),
-                              const SizedBox(
-                                width: 10,
-                              ),
-                              Container(
-                                  height: 240,
-                                  width: 200,
-                                  margin: const EdgeInsets.symmetric(
-                                      vertical: 8, horizontal: 16),
-                                  padding: const EdgeInsets.all(16),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(12),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.grey.withOpacity(0.2),
-                                        blurRadius: 6,
-                                        offset: const Offset(0, 3),
+                              child: Stack(children: [
+                                Positioned(
+                                  right: -20,
+                                  top: 0,
+                                  child: PopupMenuButton<String>(
+                                    onSelected: (value) {
+                                      if (value == 'Delete') {
+                                        // Perform delete action
+                                        timePickerController
+                                            .deleteMeeting(index);
+                                      }
+                                    },
+                                    itemBuilder: (BuildContext context) {
+                                      return [
+                                        const PopupMenuItem(
+                                          value: 'Delete',
+                                          child: Text('Delete'),
+                                        ),
+                                      ];
+                                    },
+                                    icon: const Icon(
+                                        Icons.more_vert), // Three dots icon
+                                  ),
+                                ),
+                                Padding(
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 30),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        "Meeting Type : ${meeting['headline']!}",
+                                        style: const TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.black),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Text(
+                                        "Meeting Time : ${meeting['Meeting Time']!}",
+                                        style: const TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold,
+                                            color: Color.fromARGB(
+                                                255, 39, 36, 36)),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Text(
+                                        "Details : ${meeting['details']!}",
+                                        style: const TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold,
+                                            color: Color.fromARGB(
+                                                255, 26, 25, 25)),
                                       ),
                                     ],
                                   ),
-                                  child: Stack(children: [
-                                    Positioned(
-                                      right: -20,
-                                      top: 0,
-                                      child: PopupMenuButton<String>(
-                                        onSelected: (value) {
-                                          if (value == 'Delete') {
-                                            // Perform delete action
-                                            timePickerController
-                                                .deleteMeeting(index);
-                                          }
-                                        },
-                                        itemBuilder: (BuildContext context) {
-                                          return [
-                                            const PopupMenuItem(
-                                              value: 'Delete',
-                                              child: Text('Delete'),
-                                            ),
-                                          ];
-                                        },
-                                        icon: const Icon(
-                                            Icons.more_vert), // Three dots icon
-                                      ),
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                          vertical: 30),
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            "Meeting Type : ${meeting['headline']!}",
-                                            style: const TextStyle(
-                                                fontSize: 18,
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.black),
-                                          ),
-                                          const SizedBox(height: 8),
-                                          Text(
-                                            "Meeting Time : ${meeting['Meeting Time']!}",
-                                            style: const TextStyle(
-                                                fontSize: 18,
-                                                fontWeight: FontWeight.bold,
-                                                color: Color.fromARGB(
-                                                    255, 39, 36, 36)),
-                                          ),
-                                          const SizedBox(height: 8),
-                                          Text(
-                                            "Details : ${meeting['details']!}",
-                                            style: const TextStyle(
-                                                fontSize: 18,
-                                                fontWeight: FontWeight.bold,
-                                                color: Color.fromARGB(
-                                                    255, 26, 25, 25)),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ])),
-                            ])
-                      ]);
-                    },
-                  ),
-                );
-              })),
-        ),
-        Positioned(
-          left: 50,
-          bottom: 20,
-          child: Obx(
-            () => Row(
-              children: [
-                Container(
-                  height: 80,
-                  width: 200,
-                  // width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: const Color.fromRGBO(220, 245, 173,
-                        0.6), //background: rgba(220, 245, 173, 0.6);
+                                ),
+                              ])),
+                        ])
+                  ]);
+                },
+              ),
+            );
+          })),
+    );
+  }
 
-                    borderRadius: BorderRadius.circular(70),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: List.generate(imageItems.length, (index) {
-                      return GestureDetector(
-                        onTap: () {
-                          controller
-                              .changeIndex(index); // Update selected index
-                        },
-                        child: Container(
-                          height: 80,
-                          width: 80,
-                          // padding: const EdgeInsets.all(5), // Space between the icons
-                          decoration: BoxDecoration(
-                              shape: BoxShape
-                                  .circle, // Circular shape for each icon
-                              color: controller.selectedIndex.value == index
-                                  ? Colors.white // Highlight the selected icon
-                                  : const Color.fromRGBO(255, 255, 255,
-                                      0.3) //background: rgba(255, 255, 255, 0.3);
-
-                              // Non-selected icons remain transparent
-                              ),
-                          child: Center(
-                            child: Image.asset(
-                              imageItems[index],
-                              width: 30,
-                              height: 30,
-                            ),
-                          ),
-                        ),
-                      );
-                    }),
-                  ),
-                ),
-                const SizedBox(
-                  width: 50,
-                ),
-              ],
-            ),
-          ),
-        ),
-        Positioned(
-          bottom: 20,
-          right: 20,
-          child: GestureDetector(
-            onTap: () {
-              Get.dialog(buildReminderBox());
-            },
-            child: Container(
+  Widget buildBottomBar() {
+    return Positioned(
+      left: 50,
+      bottom: 20,
+      child: Obx(
+        () => Row(
+          children: [
+            Container(
               height: 80,
-              width: 80,
+              width: 200,
               // width: double.infinity,
               decoration: BoxDecoration(
                 color: const Color.fromRGBO(
@@ -393,40 +326,74 @@ class _TimeLineViewState extends State<TimeLineView> {
 
                 borderRadius: BorderRadius.circular(70),
               ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: List.generate(imageItems.length, (index) {
+                  return GestureDetector(
+                    onTap: () {
+                      controller.changeIndex(index); // Update selected index
+                    },
+                    child: Container(
+                      height: 80,
+                      width: 80,
+                      // padding: const EdgeInsets.all(5), // Space between the icons
+                      decoration: BoxDecoration(
+                          shape:
+                              BoxShape.circle, // Circular shape for each icon
+                          color: controller.selectedIndex.value == index
+                              ? Colors.white // Highlight the selected icon
+                              : const Color.fromRGBO(255, 255, 255,
+                                  0.3) //background: rgba(255, 255, 255, 0.3);
 
-              child: const Center(
-                  child: Text(
-                '+',
-                style: TextStyle(fontSize: 28),
-              )),
+                          // Non-selected icons remain transparent
+                          ),
+                      child: Center(
+                        child: Image.asset(
+                          imageItems[index],
+                          width: 30,
+                          height: 30,
+                        ),
+                      ),
+                    ),
+                  );
+                }),
+              ),
             ),
+            const SizedBox(
+              width: 50,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget buildFab() {
+    return Positioned(
+      bottom: 20,
+      right: 20,
+      child: GestureDetector(
+        onTap: () {
+          Get.dialog(buildReminderBox());
+        },
+        child: Container(
+          height: 80,
+          width: 80,
+          // width: double.infinity,
+          decoration: BoxDecoration(
+            color: const Color.fromRGBO(
+                220, 245, 173, 0.6), //background: rgba(220, 245, 173, 0.6);
+
+            borderRadius: BorderRadius.circular(70),
           ),
-        )
-      ]),
+
+          child: const Center(
+              child: Text(
+            '+',
+            style: TextStyle(fontSize: 28),
+          )),
+        ),
+      ),
     );
   }
 }
-
-
-// class BottomNavController extends GetxController {
-//   var selectedIndex = 0
-//       .obs; //observable index for // Observable index for the currently selected tab
-//   void changeIndex(int index) {
-//     selectedIndex.value = index;
-//     switch (index) {
-//       case 0:
-//         Get.toNamed(Routes.HOMEPAGE);
-//         break;
-//       case 1:
-//         Get.toNamed(Routes.TIMELINE);
-//         break;
-
-//       //   Get.offAllNamed('/itView');
-//       //   break;
-//       default:
-//         Get.toNamed(Routes.HOMEPAGE);
-
-//         break;
-//     }
-//   }
-// }
