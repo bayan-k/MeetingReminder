@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:meetingreminder/app/modules/homepage/controllers/bottom_nav_controller.dart';
-import 'package:meetingreminder/app/modules/homepage/controllers/homepage_controller.dart';
-import 'package:meetingreminder/app/services/notification_services.dart';
+import 'package:meetingreminder/app/modules/homepage/controllers/container_controller.dart';
+import 'package:meetingreminder/app/modules/homepage/controllers/meeting_counter.dart';
+import 'package:meetingreminder/app/modules/homepage/controllers/timepicker_controller.dart';
 
 class TimeLineView extends StatefulWidget {
   const TimeLineView({super.key});
@@ -12,10 +13,13 @@ class TimeLineView extends StatefulWidget {
 }
 
 class _TimeLineViewState extends State<TimeLineView> {
-  final BottomNavController controller = Get.put(BottomNavController());
+  final BottomNavController controller = Get.find<BottomNavController>();
   final TimePickerController timePickerController =
-      Get.put(TimePickerController());
-  final NotificationService _notificationService = NotificationService();
+      Get.find<TimePickerController>();
+  final MeetingCounter meetingCounter = Get.find<MeetingCounter>();
+  final ContainerController containerController =
+      Get.find<ContainerController>();
+  // final NotificationService _notificationService = NotificationService();
 
   List<String> imageItems = [
     'assets/images/icons/home-page.png',
@@ -97,10 +101,9 @@ class _TimeLineViewState extends State<TimeLineView> {
               SizedBox(
                 width: 100,
                 child: Obx(() {
-                  return Container(
-                      child: Text(timePickerController.startTime.value.isEmpty
-                          ? 'select time'
-                          : timePickerController.startTime.value));
+                  return Text(timePickerController.startTime.value.isEmpty
+                      ? 'select time'
+                      : timePickerController.startTime.value);
                 }),
               ),
             ],
@@ -144,11 +147,11 @@ class _TimeLineViewState extends State<TimeLineView> {
                       timePickerController.remarkController.value.text,
                       timePickerController.startTime.value,
                       timePickerController.endTime.value);
-                  (
-                    id: 1,
-                    title: 'Test Notification',
-                    body: 'This is a test notification sent immediately.',
-                  );
+                  meetingCounter.increment();
+                  containerController.storeContainerData(
+                      timePickerController.startTime.value,
+                      timePickerController.remarkController.value.text,
+                      timePickerController.endTime.value);
                 },
                 child: const Text('Confirm'),
               ),
@@ -168,7 +171,7 @@ class _TimeLineViewState extends State<TimeLineView> {
     return Scaffold(
       body: Stack(children: [
         buildMeetingText(),
-        buildMeetingBox(context),
+        buildContainer(context),
         buildBottomBar(),
         buildFab(),
       ]),
@@ -186,7 +189,7 @@ class _TimeLineViewState extends State<TimeLineView> {
     );
   }
 
-  Widget buildMeetingBox(BuildContext context) {
+  Widget buildContainer(BuildContext context) {
     return Positioned(
       top: 100,
       left: 20,
@@ -198,10 +201,10 @@ class _TimeLineViewState extends State<TimeLineView> {
               padding: const EdgeInsets.all(8.0),
               child: ListView.builder(
                 shrinkWrap: true,
-                itemCount: timePickerController.meeting.length,
+                itemCount: containerController.containerList.length,
                 scrollDirection: Axis.vertical,
                 itemBuilder: (context, index) {
-                  final meeting = timePickerController.meeting[index];
+                  final meeting = containerController.containerList[index];
                   return Column(children: [
                     Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -211,7 +214,7 @@ class _TimeLineViewState extends State<TimeLineView> {
                               const Icon(Icons.circle,
                                   size: 12, color: Colors.blue),
                               if (index !=
-                                  timePickerController.meeting.length -
+                                  containerController.containerList.length -
                                       1) // Show the line except for the last item
                                 Container(
                                   width: 2,
@@ -248,8 +251,9 @@ class _TimeLineViewState extends State<TimeLineView> {
                                     onSelected: (value) {
                                       if (value == 'Delete') {
                                         // Perform delete action
-                                        timePickerController
-                                            .deleteMeeting(index);
+                                        containerController.containerList.removeAt(index);
+                                        containerController.saveContainerData();
+                                        meetingCounter.decrement();
                                       }
                                     },
                                     itemBuilder: (BuildContext context) {
@@ -272,7 +276,7 @@ class _TimeLineViewState extends State<TimeLineView> {
                                         CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        "Meeting Type : ${meeting['headline']!}",
+                                        "Meeting Type : ${meeting.value1}",
                                         style: const TextStyle(
                                             fontSize: 18,
                                             fontWeight: FontWeight.bold,
@@ -280,7 +284,7 @@ class _TimeLineViewState extends State<TimeLineView> {
                                       ),
                                       const SizedBox(height: 8),
                                       Text(
-                                        "Meeting Time : ${meeting['Meeting Time']!}",
+                                        "Meeting Time : ${meeting.value2}",
                                         style: const TextStyle(
                                             fontSize: 18,
                                             fontWeight: FontWeight.bold,
@@ -289,7 +293,7 @@ class _TimeLineViewState extends State<TimeLineView> {
                                       ),
                                       const SizedBox(height: 8),
                                       Text(
-                                        "Details : ${meeting['details']!}",
+                                        "Details : ${meeting.value3}",
                                         style: const TextStyle(
                                             fontSize: 18,
                                             fontWeight: FontWeight.bold,

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:meetingreminder/app/modules/homepage/controllers/bottom_nav_controller.dart';
-import 'package:meetingreminder/app/modules/homepage/controllers/homepage_controller.dart';
+import 'package:meetingreminder/app/modules/homepage/controllers/container_controller.dart';
+import 'package:meetingreminder/app/modules/homepage/controllers/timepicker_controller.dart';
 import 'package:meetingreminder/app/services/notification_services.dart';
+import 'package:meetingreminder/shared_widgets/meet_container.dart';
 
 import 'package:table_calendar/table_calendar.dart';
 import 'package:intl/intl.dart';
@@ -18,11 +20,15 @@ class _HomePageViewState extends State<HomePageView> {
   final Rx<DateTime> _focusedDay = Rx<DateTime>(
       DateTime.now()); // Declare _focusedDay as a reactive variable
   DateTime? _selectedDay;
-  final BottomNavController controller = Get.put(BottomNavController());
+  final BottomNavController controller = Get.find<BottomNavController>();
   final TimePickerController timePickerController =
-      Get.put(TimePickerController());
+      Get.find<TimePickerController>();
   final NotificationService _notificationService = NotificationService();
 
+  final ContainerController containerController =
+      Get.find<ContainerController>();
+
+  TextEditingController controller1 = TextEditingController();
   List<String> imageItems = [
     'assets/images/icons/home-page.png',
     'assets/images/icons/clock(1).png',
@@ -214,121 +220,151 @@ class _HomePageViewState extends State<HomePageView> {
   }
 
   Widget buildMonthPicker() {
-    return Positioned(
-      top: 46,
-      right: 40,
-      child: Container(
-        height: 60,
-        width: 150,
-        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(45),
-          boxShadow: const [
-            BoxShadow(
-              color: Colors.black12,
-              blurRadius: 4,
-              offset: Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            // Text(
-            //   DateFormat.y().format(_focusedDay), // Displays the year
-            //   style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            // ),
-            DropdownButton<String>(
-              value: DateFormat.MMMM().format(_focusedDay.value),
-              icon: const Icon(Icons.arrow_drop_down),
-              iconSize: 24,
-              underline: Container(),
-              onChanged: (String? newValue) {
-                // Use Rx's .value to update _focusedDay
-                if (newValue != null) {
-                  int monthIndex = _months.indexOf(newValue) + 1;
-                  _focusedDay.value =
-                      DateTime(_focusedDay.value.year, monthIndex);
-                }
-              },
-              items: _months.map<DropdownMenuItem<String>>((String month) {
-                return DropdownMenuItem<String>(
-                  value: month,
-                  child: Text(month, style: const TextStyle(fontSize: 16)),
-                );
-              }).toList(),
-            ),
-          ],
+    return Obx(
+      () => Positioned(
+        top: 46,
+        right: 40,
+        child: Container(
+          height: 60,
+          width: 150,
+          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(45),
+            boxShadow: const [
+              BoxShadow(
+                color: Colors.black12,
+                blurRadius: 4,
+                offset: Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              // Text(
+              //   DateFormat.y().format(_focusedDay), // Displays the year
+              //   style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              // ),
+              DropdownButton<String>(
+                value: DateFormat.MMMM().format(_focusedDay.value),
+                icon: const Icon(Icons.arrow_drop_down),
+                iconSize: 24,
+                underline: Container(),
+                onChanged: (String? newValue) {
+                  // Use Rx's .value to update _focusedDay
+                  if (newValue != null) {
+                    int monthIndex = _months.indexOf(newValue) + 1;
+                    _focusedDay.value =
+                        DateTime(_focusedDay.value.year, monthIndex);
+                  }
+                },
+                items: _months.map<DropdownMenuItem<String>>((String month) {
+                  return DropdownMenuItem<String>(
+                    value: month,
+                    child: Text(month, style: const TextStyle(fontSize: 16)),
+                  );
+                }).toList(),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
   Widget buildCalendar() {
-    return Positioned(
-      left: 30,
-      top: 130,
-      child: Container(
-        height: 380,
-        width: 350,
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(24),
-          boxShadow: const [
-            BoxShadow(
-              color: Colors.black12,
-              blurRadius: 8,
-              offset: Offset(0, 4),
-            ),
-          ],
-        ),
-        child: SingleChildScrollView(
-          scrollDirection: Axis.vertical,
-          child: TableCalendar(
-            focusedDay: _focusedDay.value,
-            firstDay: DateTime(2000),
-            lastDay: DateTime(2100),
-            selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
-            onDaySelected: (selectedDay, focusedDay) {
-              setState(() {
-                _selectedDay = selectedDay;
-                _focusedDay.value = focusedDay;
-              });
-            },
-            calendarStyle: CalendarStyle(
-              cellMargin: const EdgeInsets.all(2),
-              todayDecoration: const BoxDecoration(
-                color: Colors.blueAccent,
-                shape: BoxShape.circle,
+    return Obx(
+      () => Positioned(
+        left: 30,
+        top: 130,
+        child: Container(
+          height: 380,
+          width: 350,
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(24),
+            boxShadow: const [
+              BoxShadow(
+                color: Colors.black12,
+                blurRadius: 8,
+                offset: Offset(0, 4),
               ),
-              selectedDecoration: const BoxDecoration(
-                color: Colors.deepOrange,
-                shape: BoxShape.circle,
-              ),
-              defaultDecoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(color: Colors.grey.shade300),
-              ),
-              weekendDecoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(color: Colors.grey.shade300),
-              ),
-            ),
-            // headerStyle: const HeaderStyle(
-            //   formatButtonVisible: false,
-            //   titleCentered: true,
-            // ),
+            ],
+          ),
+          child: SingleChildScrollView(
+            scrollDirection: Axis.vertical,
+            child: TableCalendar(
+              focusedDay: _focusedDay.value,
+              firstDay: DateTime(2000),
+              lastDay: DateTime(2100),
+              selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
+              onDaySelected: (selectedDay, focusedDay) {
+                setState(() {
+                  _selectedDay = selectedDay;
+                  _focusedDay.value = focusedDay;
+                });
+              },
+              calendarStyle: CalendarStyle(
+                  todayDecoration: BoxDecoration(),
+                  selectedDecoration: BoxDecoration()),
+              calendarBuilders: CalendarBuilders(
+                defaultBuilder: (context, day, focusedDay) {
+                  bool isToday = isSameDay(day, _focusedDay.value);
+                  bool isSelected = isSameDay(day, _selectedDay);
+                  return Container(
+                      width: 40,
+                      height: 50,
+                      margin: const EdgeInsets.all(5.0),
+                      decoration: BoxDecoration(
+                        color: isToday
+                            ? const Color.fromARGB(255, 227, 84, 172)
+                            : isSelected
+                                ? Colors.deepOrange
+                                : const Color.fromARGB(255, 42, 113, 160),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          Text(
+                            '${day.day}',
+                            style: TextStyle(color: Colors.white, fontSize: 15),
+                          ),
+                          Positioned(
+                            right: 0,
+                            bottom: 0,
+                            child: Container(
+                              height: 12,
+                              width: 15,
+                              decoration:
+                                  BoxDecoration(color: Colors.amberAccent),
+                              alignment: Alignment.center,
+                              child: Text(
+                                '2',
+                                style: TextStyle(
+                                    color:
+                                        const Color.fromARGB(255, 30, 30, 30),
+                                    fontSize: 10),
+                              ),
+                            ),
+                          ),
+                        ],
 
-            headerStyle: const HeaderStyle(
-              headerMargin: EdgeInsets.zero,
-              formatButtonVisible: false,
-              titleCentered: false,
-              titleTextStyle: TextStyle(fontSize: 0),
-              leftChevronVisible: false, // Disable default chevron buttons
-              rightChevronVisible: false,
-              // Disable default chevron buttons
+                        //
+                      ));
+                },
+              ),
+              headerStyle: const HeaderStyle(
+                headerMargin: EdgeInsets.zero,
+                formatButtonVisible: false,
+                titleCentered: false,
+                titleTextStyle: TextStyle(fontSize: 0),
+                leftChevronVisible: false, // Disable default chevron buttons
+                rightChevronVisible: false,
+                // Disable default chevron buttons
+              ),
             ),
           ),
         ),
@@ -344,103 +380,6 @@ class _HomePageViewState extends State<HomePageView> {
         'Today Meetings',
         style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
       ),
-    );
-  }
-
-  Widget buildContainer(BuildContext context) {
-    final TimePickerController timePickerController =
-        Get.put(TimePickerController());
-    return Positioned(
-      bottom: 70,
-      left: 30,
-      child: SizedBox(
-          height: 250,
-          width: MediaQuery.of(context).size.width - 60,
-          child: Obx(() {
-            return Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: ListView.builder(
-                shrinkWrap: true,
-                itemCount: timePickerController.meeting.length,
-                scrollDirection: Axis.vertical,
-                itemBuilder: (context, index) {
-                  final meeting = timePickerController.meeting[index];
-                  return Container(
-                      height: 240,
-                      width: 200,
-                      margin: const EdgeInsets.symmetric(
-                          vertical: 8, horizontal: 16),
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey.withOpacity(0.2),
-                            blurRadius: 6,
-                            offset: const Offset(0, 3),
-                          ),
-                        ],
-                      ),
-                      child: Stack(children: [
-                        Positioned(
-                          right: -20,
-                          top: 0,
-                          child: PopupMenuButton<String>(
-                            onSelected: (value) {
-                              if (value == 'Delete') {
-                                // Perform delete action
-                                timePickerController.deleteMeeting(index);
-                              }
-                            },
-                            itemBuilder: (BuildContext context) {
-                              return [
-                                const PopupMenuItem(
-                                  value: 'Delete',
-                                  child: Text('Delete'),
-                                ),
-                              ];
-                            },
-                            icon:
-                                const Icon(Icons.more_vert), // Three dots icon
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 30),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                "Meeting Type : ${meeting['headline']!}",
-                                style: const TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                "Meeting Time : ${meeting['Meeting Time']!}",
-                                style: const TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                    color: Color.fromARGB(255, 39, 36, 36)),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                "Details : ${meeting['details']!}",
-                                style: const TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                    color: Color.fromARGB(255, 26, 25, 25)),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ]));
-                },
-              ),
-            );
-          })),
     );
   }
 
